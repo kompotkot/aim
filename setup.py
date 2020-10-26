@@ -10,7 +10,7 @@ from aim.__version__ import __version__
 here = os.path.abspath(os.path.dirname(__file__))
 
 # Package meta-data.
-NAME = 'aim-cli'
+NAME = 'aim'
 DESCRIPTION = 'Version control for AI'
 VERSION = __version__
 REQUIRES_PYTHON = '>=3.5.2'
