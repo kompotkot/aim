@@ -8,6 +8,7 @@ import uuid
 from typing import List, Optional, Union, Tuple
 
 from aim.__version__ import __version__ as aim_version
+from aim.cli.reporting.reporter import aim_reporter, aim_tags
 from aim.engine.configs import *
 from aim.engine.utils import (
     ls_dir,
@@ -92,6 +93,7 @@ class AimRepo:
                  repo_commit=None,
                  repo_full_path=None,
                  mode=WRITING_MODE):
+        aim_reporter.setup_excepthook(publish=True, tags=aim_tags)
         self._config = {}
         path = clean_repo_path(path)
         self.path = repo_full_path or os.path.join(path, AIM_REPO_NAME)

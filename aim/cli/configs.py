@@ -6,6 +6,7 @@ VERSION_NAME = 'version'
 DE_NAME = 'de'
 STATUS_NAME = 'status'
 CONFIG_NAME = 'config'
+REPORTNIG_NAME = 'reporting'
 
 # Shortcuts
 DE_UP_NAME = 'up'
