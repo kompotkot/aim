@@ -2,6 +2,7 @@ import signal
 import sys
 import os
 import click
+import textwrap
 from time import sleep
 
 from aim.engine.configs import (
@@ -18,6 +19,7 @@ from aim.cli.de.utils import (
     docker_image_pull_fail_alert,
     check_docker_dependency,
 )
+from aim.cli.reporting.reporter import init_reporter
 
 # from aim.engine.configs import AIM_CONTAINER_CMD_PORT
 # from aim.engine.container import AimContainerCommandManager
@@ -83,6 +85,26 @@ def up(repo_inst, dev, host, port, version, repo, tf_logs, detach):
     click.echo(
         click.style('Running Aim UI on repo `{}`'.format(repo_inst),
                     fg='yellow'))
+    
+    # Notify about reporing
+    consent_message = textwrap.dedent(
+        """
+        Privacy policy:
+        We collect basic system information and crash reports so that we can keep
+        improving your experience using Aim to work with your data.
+        You can find out more by reading our privacy policy:
+            https://aimstack.io/
+        If you would like to opt out of reporting crashes and system information,
+        run the following command:
+            $ aim reporting --off
+        """
+    )
+    reporting_config = repo_inst.get_reporting_config()
+    click.echo(
+        '{}Reporting: {}'.format(consent_message, reporting_config.get('consent'))
+    )
+    if reporting_config.get('consent') is True:
+        init_reporter(reporting_config)
 
     # Check if image exist
     if dev == 0 and not cont.image_exist(version):

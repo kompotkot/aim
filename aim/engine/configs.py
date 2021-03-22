@@ -11,6 +11,7 @@ AIM_MODELS_DIR_NAME = 'models'
 AIM_CORR_DIR_NAME = 'correlations'
 AIM_CORR_DIRS_NAME = 'dirs'
 AIM_CONFIG_FILE_NAME = 'config.json'
+AIM_REPORT_CONFIG_FILE_NAME = 'reporting_config.json'
 AIM_DIFF_DIR_NAME = 'diff'
 AIM_DIFF_FILE_NAME = 'diff.txt'
 AIM_PARAMS_DIR_NAME = 'hyperparameters'
@@ -59,3 +60,7 @@ AIM_BRANCH_ENV_VAR = '__AIM_BRANCH__'
 AIM_COMMIT_ENV_VAR = '__AIM_COMMIT__'
 AIM_AUTOMATED_EXEC_ENV_VAR = '__AIM_AUTOMATED_EXEC__'
 AIM_TF_LOGS_PATH = '/tf_logs'
+
+# Reporting-related configuration
+HUMBUG_TOKEN = "40940836-0490-4c33-a71b-53257fb3be95"
+HUMBUG_KB_ID = "6a0c23b6-180e-4860-91c5-9eeb8eafb52e"

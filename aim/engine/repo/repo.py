@@ -5,7 +5,7 @@ import re
 import time
 import hashlib
 import uuid
-from typing import List, Optional, Union, Tuple
+from typing import Any, Dict, List, Optional, Union, Tuple
 
 from aim.__version__ import __version__ as aim_version
 from aim.engine.configs import *
@@ -96,6 +96,7 @@ class AimRepo:
         path = clean_repo_path(path)
         self.path = repo_full_path or os.path.join(path, AIM_REPO_NAME)
         self.config_path = os.path.join(self.path, AIM_CONFIG_FILE_NAME)
+        self.config_report_path = os.path.join(self.path, AIM_REPORT_CONFIG_FILE_NAME)
         self.hash = hashlib.md5(self.path.encode('utf-8')).hexdigest()
 
         self.active_commit = repo_commit or AIM_COMMIT_INDEX_DIR_NAME
@@ -211,6 +212,45 @@ class AimRepo:
         """
         with open(self.config_path, 'w') as f:
             f.write(json.dumps(self._config))
+    
+    def save_reporting_config(self, consent: bool, client_id: Optional[str] = None):
+        """
+        Allow or disallow Aim reporting.
+        """
+        reporting_config = {}
+        if os.path.isfile(self.config_report_path):
+            try:
+                with open(self.self.config_path, "r") as ifp:
+                    reporting_config = json.load(ifp)
+            except Exception:
+                pass
+
+        if client_id is not None and reporting_config.get("client_id") is None:
+            reporting_config["client_id"] = client_id
+
+        if reporting_config.get("client_id") is None:
+            reporting_config["client_id"] = str(uuid.uuid4())
+
+        reporting_config["consent"] = consent
+
+        try:
+            with open(self.config_report_path, "w") as ofp:
+                json.dump(reporting_config, ofp)
+        except Exception:
+            pass
+    
+    def get_reporting_config(self) -> Dict[str, Any]:
+        reporting_config = {}
+        try:
+            if not os.path.exists(self.config_report_path):
+                client_id = str(uuid.uuid4())
+                reporting_config["client_id"] = client_id
+                self.save_reporting_config(True, client_id)
+            with open(self.config_report_path, "r") as ifp:
+                reporting_config = json.load(ifp)
+        except Exception:
+            pass
+        return reporting_config
 
     def get_project_name(self):
         """

@@ -32,6 +32,7 @@ REQUIRED = [
     'docker>=4.1.0',
     'aimrecords==0.0.7',
     'protobuf>=3.11.0',
+    'humbug>=0.1.14'
 ]
 
 
