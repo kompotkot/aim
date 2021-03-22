@@ -6,7 +6,6 @@ from typing import Optional, Dict, List, Tuple
 from queue import Queue, Empty
 
 from aim.engine.repo import AimRepo
-from aim.cli.reporting.reporter import init_reporter
 from aim.artifacts.artifact_writer import ArtifactWriter
 from aim.sdk.session.utils import (
     exception_resistant,
@@ -312,16 +311,12 @@ class Session:
 
         if path is not None:
             repo = AimRepo(path)
-            reporting_config = repo.get_reporting_config()
-            init_reporter(reporting_config)
             if not repo.exists() or not repo.is_initialized():
                 if not repo.init():
                     raise ValueError(init_err_msg)
             repo = AimRepo(path, branch_name, commit_hash)
         else:
             repo = AimRepo.get_working_repo()
-            reporting_config = repo.get_reporting_config()
-            init_reporter(reporting_config)
             if repo is None:
                 path = os.getcwd()
                 repo = AimRepo(path)
