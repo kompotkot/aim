@@ -62,7 +62,7 @@ class AimRepo:
         if not repo_found:
             return None
 
-        return working_dir
+        return os.path.join(working_dir, AIM_REPO_NAME)
 
 
     @staticmethod
