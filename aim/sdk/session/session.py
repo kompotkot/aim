@@ -35,6 +35,7 @@ class Session:
                  flush_frequency: int = DEFAULT_FLUSH_FREQUENCY,
                  block_termination: bool = True,
                  run: Optional[str] = None):
+        aim_reporter.system_report(publish=True, tags=aim_tags)
         aim_reporter.setup_excepthook(publish=True, tags=aim_tags)
         self.active = False
         self._lock = threading.Lock()

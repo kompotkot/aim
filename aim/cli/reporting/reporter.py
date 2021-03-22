@@ -7,27 +7,62 @@ from humbug.consent import HumbugConsent
 from humbug.report import Reporter
 
 from aim.__version__ import __version__ as aim_version
-from aim.engine.configs import AIM_REPORT_CONFIG_FILE_NAME, HUMBUG_TOKEN, HUMBUG_KB_ID
-from aim.engine.repo import AimRepo
+from aim.engine.configs import (
+    AIM_REPORT_CONFIG_FILE_NAME,
+    AIM_CONFIG_FILE_NAME,
+    AIM_REPO_NAME,
+    HUMBUG_TOKEN,
+    HUMBUG_KB_ID,
+)
 
 
 aim_version_tag = "version:{}".format(aim_version)
 aim_tags = [aim_version_tag]
 
+
+def get_aim_repo_dir(initialized_only: bool = False) -> Optional[str]:
+    # Get working directory path
+    working_dir = os.getcwd()
+
+    # Try to find closest .aim repository
+    repo_found = False
+    while True:
+        if len(working_dir) <= 1:
+            break
+
+        repo_path = os.path.join(working_dir, AIM_REPO_NAME)
+        config_file_path = os.path.join(repo_path, AIM_CONFIG_FILE_NAME)
+
+        if (not initialized_only and os.path.exists(repo_path)) or (
+            initialized_only and os.path.isfile(config_file_path)
+        ):
+            repo_found = True
+            break
+        else:
+            working_dir = os.path.split(working_dir)[0]
+
+    if not repo_found:
+        return None
+
+    return os.path.join(working_dir, AIM_REPO_NAME)
+
+
 def get_reporting_config_path() -> Optional[str]:
-    repo_dir = AimRepo.get_aim_repo_dir(initialized_only=True)
+    repo_dir = get_aim_repo_dir(initialized_only=True)
     if repo_dir is None:
         return None
     return os.path.join(repo_dir, AIM_REPORT_CONFIG_FILE_NAME)
+
 
 def save_reporting_config(consent: bool, client_id: Optional[str] = None):
     """
     Allow or disallow Aim reporting.
     """
     config_report_path = get_reporting_config_path()
-    if config_report_path is not None:
-        # TODO: Raise error
-        return
+    if config_report_path is None:
+        raise Exception(
+            'Config report file not found, use "aim init" to initialize a new repository'
+        )
 
     reporting_config = {}
     if os.path.isfile(config_report_path):
@@ -51,6 +86,7 @@ def save_reporting_config(consent: bool, client_id: Optional[str] = None):
     except Exception:
         pass
 
+
 def get_reporting_config() -> Dict[str, Any]:
     reporting_config = {}
     config_report_path = get_reporting_config_path()
@@ -67,11 +103,14 @@ def get_reporting_config() -> Dict[str, Any]:
             pass
     return reporting_config
 
+
 session_id = str(uuid.uuid4())
+
 
 def aim_consent_from_reporting_config_file() -> bool:
     reporting_config = get_reporting_config()
     return reporting_config.get("consent", False)
+
 
 client_id = get_reporting_config().get("client_id")
 
@@ -84,22 +123,3 @@ aim_reporter = Reporter(
     bugout_token=HUMBUG_TOKEN,
     bugout_journal_id=HUMBUG_KB_ID,
 )
-
-
-def configure_reporter(
-    client_id: uuid.UUID, aim_consent: bool, reporter: Reporter = aim_reporter
-) -> Reporter:
-    """
-    Prepare Humbug Consent mechanism and create reporter.
-    """
-    aim_reporter.consent = aim_consent
-    aim_reporter.client_id = client_id
-    # return aim_reporter
-
-
-def init_reporter(reporting_config: Dict[str, Any]):
-    aim_reporter = configure_reporter(
-        client_id=reporting_config.get("client_id"),
-        aim_consent=reporting_config.get("consent"),
-    )
-    aim_reporter.setup_excepthook(publish=True, tags=aim_tags)

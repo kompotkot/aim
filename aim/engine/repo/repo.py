@@ -5,11 +5,10 @@ import re
 import time
 import hashlib
 import uuid
-from typing import Any, Dict, List, Optional, Union, Tuple
-
-from humbug.consent import HumbugConsent
+from typing import List, Optional, Union, Tuple
 
 from aim.__version__ import __version__ as aim_version
+from aim.cli.reporting.reporter import aim_reporter, aim_tags
 from aim.engine.configs import *
 from aim.engine.utils import (
     ls_dir,
@@ -39,7 +38,13 @@ class AimRepo:
     READING_MODE = 'r'
 
     @staticmethod
-    def get_aim_repo_dir(initialized_only: bool = False) -> Optional[str]:
+    def get_working_repo(*args,
+                         initialized_only=False,
+                         **kwargs):
+        """
+        Searches for .aim repository in working directory
+        and returns AimRepo object if exists
+        """
         # Get working directory path
         working_dir = os.getcwd()
 
@@ -62,20 +67,6 @@ class AimRepo:
         if not repo_found:
             return None
 
-        return os.path.join(working_dir, AIM_REPO_NAME)
-
-
-    @staticmethod
-    def get_working_repo(*args,
-                         initialized_only=False,
-                         **kwargs):
-        """
-        Searches for .aim repository in working directory
-        and returns AimRepo object if exists
-        """
-        working_dir = AimRepo.get_aim_repo_dir(initialized_only=initialized_only)
-        if working_dir is None:
-            return None
         return AimRepo(working_dir, *args, **kwargs)
 
     @staticmethod
@@ -102,11 +93,11 @@ class AimRepo:
                  repo_commit=None,
                  repo_full_path=None,
                  mode=WRITING_MODE):
+        aim_reporter.setup_excepthook(publish=True, tags=aim_tags)
         self._config = {}
         path = clean_repo_path(path)
         self.path = repo_full_path or os.path.join(path, AIM_REPO_NAME)
         self.config_path = os.path.join(self.path, AIM_CONFIG_FILE_NAME)
-        self.config_report_path = os.path.join(self.path, AIM_REPORT_CONFIG_FILE_NAME)
         self.hash = hashlib.md5(self.path.encode('utf-8')).hexdigest()
 
         self.active_commit = repo_commit or AIM_COMMIT_INDEX_DIR_NAME
@@ -222,53 +213,6 @@ class AimRepo:
         """
         with open(self.config_path, 'w') as f:
             f.write(json.dumps(self._config))
-
-    def aim_concent(self) -> bool:
-        try:
-            with open(self.config_report_path, "r") as ifp:
-                reporting_config = json.load(ifp)
-        except:
-            return False
-        return reporting_config.get('consent', False)
-
-    def save_reporting_config(self, consent: bool, client_id: Optional[str] = None):
-        """
-        Allow or disallow Aim reporting.
-        """
-        reporting_config = {}
-        if os.path.isfile(self.config_report_path):
-            try:
-                with open(self.self.config_path, "r") as ifp:
-                    reporting_config = json.load(ifp)
-            except Exception:
-                pass
-
-        if client_id is not None and reporting_config.get("client_id") is None:
-            reporting_config["client_id"] = client_id
-
-        if reporting_config.get("client_id") is None:
-            reporting_config["client_id"] = str(uuid.uuid4())
-
-        reporting_config["consent"] = consent
-
-        try:
-            with open(self.config_report_path, "w") as ofp:
-                json.dump(reporting_config, ofp)
-        except Exception:
-            pass
-
-    def get_reporting_config(self) -> Dict[str, Any]:
-        reporting_config = {}
-        try:
-            if not os.path.exists(self.config_report_path):
-                client_id = str(uuid.uuid4())
-                reporting_config["client_id"] = client_id
-                self.save_reporting_config(True, client_id)
-            with open(self.config_report_path, "r") as ifp:
-                reporting_config = json.load(ifp)
-        except Exception:
-            pass
-        return reporting_config
 
     def get_project_name(self):
         """

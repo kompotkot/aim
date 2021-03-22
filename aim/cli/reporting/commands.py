@@ -2,9 +2,7 @@ import click
 
 from humbug.report import Report
 
-from aim.engine.repo import AimRepo
-from aim.cli.reporting.reporter import aim_reporter, get_reporting_config, save_reporting_config
-from aim.cli.de.utils import repo_init_alert
+from aim.cli.reporting.reporter import aim_reporter, save_reporting_config
 
 
 @click.command()

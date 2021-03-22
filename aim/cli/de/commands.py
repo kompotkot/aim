@@ -14,12 +14,12 @@ from aim.engine.configs import (
 from aim.engine.utils import clean_repo_path
 from aim.engine.repo import AimRepo
 from aim.engine.container import AimContainer
+from aim.cli.reporting.reporter import aim_reporter, aim_tags, get_reporting_config
 from aim.cli.de.utils import (
     repo_init_alert,
     docker_image_pull_fail_alert,
     check_docker_dependency,
 )
-from aim.cli.reporting.reporter import aim_reporter, aim_tags
 
 # from aim.engine.configs import AIM_CONTAINER_CMD_PORT
 # from aim.engine.container import AimContainerCommandManager
@@ -99,10 +99,11 @@ def up(repo_inst, dev, host, port, version, repo, tf_logs, detach):
             $ aim reporting --off
         """
     )
-    reporting_config = repo_inst.get_reporting_config()
+    reporting_config = get_reporting_config()
     click.echo(
         '{}Reporting: {}'.format(consent_message, reporting_config.get('consent'))
     )
+    aim_reporter.system_report(publish=True, tags=aim_tags)
     aim_reporter.setup_excepthook(publish=True, tags=aim_tags)
 
     # Check if image exist
