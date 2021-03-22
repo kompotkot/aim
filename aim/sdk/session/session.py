@@ -6,7 +6,6 @@ from typing import Optional, Dict, List, Tuple
 from queue import Queue, Empty
 
 from aim.engine.repo import AimRepo
-from aim.cli.reporting.reporter import aim_reporter, aim_tags
 from aim.artifacts.artifact_writer import ArtifactWriter
 from aim.sdk.session.utils import (
     exception_resistant,
@@ -35,8 +34,6 @@ class Session:
                  flush_frequency: int = DEFAULT_FLUSH_FREQUENCY,
                  block_termination: bool = True,
                  run: Optional[str] = None):
-        aim_reporter.system_report(publish=True, tags=aim_tags)
-        aim_reporter.setup_excepthook(publish=True, tags=aim_tags)
         self.active = False
         self._lock = threading.Lock()
         self._close_lock = threading.Lock()
