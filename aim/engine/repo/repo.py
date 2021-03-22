@@ -7,7 +7,10 @@ import hashlib
 import uuid
 from typing import Any, Dict, List, Optional, Union, Tuple
 
+from humbug.consent import HumbugConsent
+
 from aim.__version__ import __version__ as aim_version
+from aim.cli.reporting.reporter import aim_reporter
 from aim.engine.configs import *
 from aim.engine.utils import (
     ls_dir,
@@ -92,6 +95,8 @@ class AimRepo:
                  repo_commit=None,
                  repo_full_path=None,
                  mode=WRITING_MODE):
+        self.reporter = aim_reporter
+        self.reporter.consent = HumbugConsent(self.aim_concent)
         self._config = {}
         path = clean_repo_path(path)
         self.path = repo_full_path or os.path.join(path, AIM_REPO_NAME)
@@ -213,6 +218,14 @@ class AimRepo:
         with open(self.config_path, 'w') as f:
             f.write(json.dumps(self._config))
     
+    def aim_concent(self) -> bool:
+        try:
+            with open(self.config_report_path, "r") as ifp:
+                reporting_config = json.load(ifp)
+        except:
+            return False
+        return reporting_config.get('consent', False)
+
     def save_reporting_config(self, consent: bool, client_id: Optional[str] = None):
         """
         Allow or disallow Aim reporting.

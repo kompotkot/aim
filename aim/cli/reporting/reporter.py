@@ -11,23 +11,28 @@ aim_version_tag = "version:{}".format(aim_version)
 aim_tags = [aim_version_tag]
 
 
-def configure_reporter(client_id: uuid.UUID, aim_consent: bool) -> Reporter:
+session_id = str(uuid.uuid4())
+
+aim_consent = HumbugConsent(False)
+aim_reporter = Reporter(
+    name="aim",
+    consent=aim_consent,
+    client_id=None,
+    session_id=session_id,
+    bugout_token=HUMBUG_TOKEN,
+    bugout_journal_id=HUMBUG_KB_ID,
+)
+
+
+def configure_reporter(
+    client_id: uuid.UUID, aim_consent: bool, reporter: Reporter = aim_reporter
+) -> Reporter:
     """
     Prepare Humbug Consent mechanism and create reporter.
     """
-    session_id = str(uuid.uuid4())
-
-    aim_consent = HumbugConsent(aim_consent)
-    aim_reporter = Reporter(
-        name="aim",
-        consent=aim_consent,
-        client_id=client_id,
-        session_id=session_id,
-        bugout_token=HUMBUG_TOKEN,
-        bugout_journal_id=HUMBUG_KB_ID,
-    )
-
-    return aim_reporter
+    aim_reporter.consent = aim_consent
+    aim_reporter.client_id = client_id
+    # return aim_reporter
 
 
 def init_reporter(reporting_config: Dict[str, Any]):
